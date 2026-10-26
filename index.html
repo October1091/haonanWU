@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#080b15" />
+    <meta
+      name="description"
+      content="枕边是一款只记录上床时间的睡眠记录 App。打开即对准此刻，翻动微调，自动计算平均入睡时间与作息规律。"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="枕边" />
+    <title>枕边 · 睡眠记录</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1020'/%3E%3Cpath d='M43 41.5A18 18 0 1 1 25.5 14a15 15 0 1 0 17.5 27.5Z' fill='%23f2cd94'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="moon-glow"></div>
+      <div class="orbit orbit-one"></div>
+      <div class="orbit orbit-two"></div>
+      <div class="stars"></div>
+      <div class="grain"></div>
+    </div>
+
+    <div class="app">
+      <header class="topbar">
+        <div class="brand" aria-label="枕边睡眠记录">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path
+                d="M23.8 21.2A11.2 11.2 0 1 1 11.3 5.6a8.8 8.8 0 1 0 12.5 15.6Z"
+                fill="currentColor"
+              />
+              <circle cx="24.4" cy="8.1" r="1.35" fill="currentColor" opacity=".65" />
+            </svg>
+          </span>
+          <span class="brand-copy">
+            <strong>枕边</strong>
+            <small>睡眠记录</small>
+          </span>
+        </div>
+
+        <div class="topbar-side">
+          <div class="live-time" aria-label="当前时间">
+            <span class="live-dot"></span>
+            <span id="liveClock">--:--</span>
+          </div>
+          <button
+            class="icon-button"
+            id="openSettingsBtn"
+            type="button"
+            aria-label="打开设置"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <path
+                d="M19.4 13.2c.05-.4.08-.8.08-1.2s-.03-.8-.08-1.2l2-1.55-1.9-3.3-2.36.95a7.7 7.7 0 0 0-2.08-1.2L14.72 3h-3.8l-.37 2.7a7.7 7.7 0 0 0-2.08 1.2L6.1 5.95l-1.9 3.3 2 1.55c-.05.4-.08.8-.08 1.2s.03.8.08 1.2l-2 1.55 1.9 3.3 2.36-.95a7.7 7.7 0 0 0 2.08 1.2l.37 2.7h3.8l.37-2.7a7.7 7.7 0 0 0 2.08-1.2l2.36.95 1.9-3.3-2-1.55Z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="card record-card reveal reveal-one" aria-labelledby="recordHeading">
+          <div class="card-topline">
+            <span class="eyebrow">
+              <i class="eyebrow-dot"></i>
+              <span id="recordEyebrow">今晚入睡</span>
+            </span>
+            <span class="date-pill" id="nightBadge">正在定位日期…</span>
+          </div>
+
+          <div class="record-intro">
+            <h1 id="recordHeading">把今晚，轻轻放下。</h1>
+            <p>打开就是此刻，不必再对时间。只有想微调时，才上下翻动。</p>
+          </div>
+
+          <div class="time-stage">
+            <div class="time-halo" aria-hidden="true"></div>
+            <div class="time-picker" id="mainTimePicker"></div>
+          </div>
+
+          <button
+            class="boundary-chip"
+            id="boundaryChipBtn"
+            type="button"
+            aria-label="调整睡眠分界点"
+          >
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M6.1 2.4a5.6 5.6 0 1 0 7.5 7.5 4.7 4.7 0 0 1-7.5-7.5Z"
+                stroke="currentColor"
+                stroke-width="1.1"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span>睡眠分界点</span>
+            <strong id="boundaryChipValue">05:00</strong>
+            <span class="boundary-chip-action">调整</span>
+          </button>
+
+          <div class="record-meta">
+            <button class="sync-chip" id="syncNowBtn" type="button">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path
+                  d="M10 3.2a6.8 6.8 0 1 0 6.48 4.75"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M16.6 3.3v4.2h-4.2"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span>跟随此刻</span>
+            </button>
+            <span class="record-note" id="recordNote">已对准打开 App 的时间</span>
+          </div>
+
+          <button class="primary-button save-button" id="saveBtn" type="button">
+            <span id="saveBtnLabel">记录上床</span>
+            <span class="button-arrow" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M4 10h11M11 5.5l4.5 4.5-4.5 4.5"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+          </button>
+
+          <p class="fineprint">
+            <span class="keycap">↑</span><span class="keycap">↓</span>
+            上下翻动调整 · 仅保留到分钟
+          </p>
+        </section>
+
+        <aside class="side-column" aria-label="睡眠统计">
+          <section class="card stats-card reveal reveal-two">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">平均入睡</span>
+                <h2>你的睡眠节律</h2>
+              </div>
+              <div class="range-switch" role="group" aria-label="统计范围">
+                <button type="button" data-range="7" class="is-active">7 晚</button>
+                <button type="button" data-range="30">30 晚</button>
+                <button type="button" data-range="all">全部</button>
+              </div>
+            </div>
+
+            <div class="average-hero">
+              <div class="average-main">
+                <span class="average-period" id="averagePeriod">平均</span>
+                <strong class="average-time" id="averageTime">--:--</strong>
+              </div>
+              <span class="regularity-pill" id="regularityPill" data-level="empty">
+                <i></i>
+                <span id="regularityText">等待记录</span>
+              </span>
+            </div>
+
+            <p class="average-copy" id="averageCopy">
+              记录几晚后，就能看见你的平均入睡时间。
+            </p>
+
+            <div class="comparison" id="comparison" hidden>
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M3 8h10M9.5 4.5 13 8l-3.5 3.5"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span id="comparisonText"></span>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-label">记录</span>
+                <strong id="statCount">0</strong>
+                <small id="statCountSub">/ 7 晚</small>
+              </div>
+              <div class="stat">
+                <span class="stat-label">波动</span>
+                <strong id="statSd">—</strong>
+                <small>分钟</small>
+              </div>
+              <div class="stat">
+                <span class="stat-label">最早</span>
+                <strong id="statEarliest">—</strong>
+                <small>入睡</small>
+              </div>
+              <div class="stat">
+                <span class="stat-label">最晚</span>
+                <strong id="statLatest">—</strong>
+                <small>入睡</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="card chart-card reveal reveal-three">
+            <div class="section-heading chart-heading">
+              <div>
+                <span class="eyebrow">最近 7 晚</span>
+                <h2>入睡轨迹</h2>
+              </div>
+              <span class="chart-legend"><i></i>平均线</span>
+            </div>
+            <div class="chart-wrap" id="chartWrap"></div>
+            <div class="chart-foot">
+              <span>上早下晚</span>
+              <span id="chartFootNote">虚线为平均值</span>
+            </div>
+          </section>
+        </aside>
+
+        <section class="card history-card reveal reveal-four" aria-labelledby="historyHeading">
+          <div class="section-heading history-heading">
+            <div>
+              <span class="eyebrow">全部记录</span>
+              <h2 id="historyHeading">每一晚</h2>
+            </div>
+            <span class="history-count" id="historyCount">0 晚</span>
+          </div>
+
+          <div class="history-list" id="historyList"></div>
+
+          <div class="history-empty" id="historyEmpty">
+            <div class="empty-orbit" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path
+                  d="M34.3 31.2A15 15 0 1 1 17 8.8a12 12 0 1 0 17.3 22.4Z"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                />
+                <circle cx="36" cy="12" r="1.4" fill="currentColor" />
+              </svg>
+            </div>
+            <h3>还没有入睡记录</h3>
+            <p>今晚记下第一晚，平均时间会从这一晚开始生长。</p>
+          </div>
+
+          <button class="text-button history-more" id="historyMore" type="button" hidden>
+            展开更早记录
+          </button>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span class="footer-moon" aria-hidden="true">☾</span>
+        <p>愿你今晚好眠。数据只保存在这台设备的浏览器里。</p>
+        <span class="footer-version">枕边 1.0</span>
+      </footer>
+    </div>
+
+    <dialog class="modal" id="settingsDialog" aria-labelledby="settingsTitle">
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow">偏好设置</span>
+            <h2 id="settingsTitle">睡眠分界点</h2>
+          </div>
+          <button
+            class="icon-button modal-close"
+            type="button"
+            data-close-dialog="settingsDialog"
+            aria-label="关闭设置"
+          >
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="m5.5 5.5 9 9m0-9-9 9"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p class="modal-copy">
+          早于这个时间入睡，都算作前一天晚上。推荐使用
+          <strong>凌晨 05:00</strong>。
+        </p>
+
+        <div class="boundary-example" id="boundaryExample">
+          <span class="boundary-example-dot"></span>
+          <span id="boundaryExampleText">凌晨 05:00 前入睡 → 记在前一晚</span>
+        </div>
+
+        <div class="settings-picker" id="settingsTimePicker"></div>
+
+        <button class="text-button reset-boundary" id="resetBoundaryBtn" type="button">
+          使用推荐 05:00
+        </button>
+
+        <div class="modal-note">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M8 1.8 13.2 4v4.1c0 3-2.1 5.2-5.2 6.1-3.1-.9-5.2-3.1-5.2-6.1V4L8 1.8Z"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linejoin="round"
+            />
+          </svg>
+          修改分界点会重新整理已有记录的归属日期，数据只保存在本设备。
+        </div>
+
+        <div class="modal-actions">
+          <button
+            class="secondary-button"
+            type="button"
+            data-close-dialog="settingsDialog"
+          >
+            取消
+          </button>
+          <button class="primary-button modal-primary" id="saveSettingsBtn" type="button">
+            保存设置
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="editDialog" aria-labelledby="editTitle">
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <span class="eyebrow" id="editEyebrow">修改记录</span>
+            <h2 id="editTitle">调整入睡时间</h2>
+          </div>
+          <button
+            class="icon-button modal-close"
+            type="button"
+            data-close-dialog="editDialog"
+            aria-label="关闭"
+          >
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path
+                d="m5.5 5.5 9 9m0-9-9 9"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <p class="modal-copy" id="editCopy">上下翻动，调整这一晚的入睡时间。</p>
+        <div class="settings-picker" id="editTimePicker"></div>
+        <div class="modal-actions">
+          <button
+            class="secondary-button"
+            type="button"
+            data-close-dialog="editDialog"
+          >
+            取消
+          </button>
+          <button class="primary-button modal-primary" id="saveEditBtn" type="button">
+            保存修改
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal modal-small" id="confirmDialog" aria-labelledby="confirmTitle">
+      <div class="modal-card">
+        <h2 id="confirmTitle">删除这晚记录？</h2>
+        <p class="modal-copy" id="confirmMessage">删除后无法恢复。</p>
+        <div class="modal-actions">
+          <button
+            class="secondary-button"
+            type="button"
+            data-close-dialog="confirmDialog"
+          >
+            取消
+          </button>
+          <button class="danger-button" id="confirmActionBtn" type="button">
+            删除
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <span class="toast-icon" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none">
+          <path
+            d="m4.5 10.2 3.4 3.4 7.6-7.6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+      <span id="toastText"></span>
+    </div>
+
+    <script src="sleep-core.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
